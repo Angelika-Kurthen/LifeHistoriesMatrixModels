@@ -1,18 +1,20 @@
 ##########################
-# Fast Life History model
+# Moderate Life History model
 ###########################
 
 library(purrr)
+library(tidyverse)
 library(lubridate)
 library(plyr)
 library(dplyr)
 library(ggplot2)
 # data retrieval tool from USGS
 library(dataRetrieval)
+
 # source bespoke functions
 source("Scripts/1spFunctions.R")
 
-Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct, iteration, peaklist = NULL, peakeach = NULL, fecundity = 500, dds = 1200, stage_output = "all", dens.dep = T){
+Cmodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct, iteration, peaklist = NULL, peakeach = NULL, fecundity = 500, dds = 900, stage_output = "all", dens.dep = T){
   
   # set up model
   source("LifeHistoriesMatrixModels/Scripts/NegExpSurv.R")
@@ -43,7 +45,7 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
   
   # want to run this for one year, in 14 day timesteps 
   timestep <- seq(2, (length(temps$Temperature) + 1), by = 1)
-  
+
   # create array to put the total N of all species into
   Total.N <- array(0,
                    dim  <-c((length(timestep) +1 ), iterations),
@@ -56,13 +58,12 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
                     dimnames = list(1:(length(timestep)+1), c("S1", "S2", "S3"), 1:iterations)
   )
   
-  #output.N.list <- reparray
-  
   sizelist <- array(0,
                     
                     dim = c(length(timestep) + 1, 3, iterations),
                     dimnames = list(1:(length(timestep)+1), c("S1", "S2", "S3"), 1:iterations)
   )
+  
   Qmin <- Qmin
   a <- 0.01
   g <- 0.075
@@ -75,11 +76,11 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
   #-------------------------
   # Outer Loop of Iterations
   #--------------------------
-  for (iter in c(1:iterations)) 
-    K = Kb # need to reset K for each iteration
+  for (iter in c(1:iterations)) {
+         K = Kb # need to reset K for each iteration
     
-    # pull random values from a uniform distribution 
-    output.N.list[1,1:3, iter]<- runif(3, min = 1, max = (0.3*K))
+    output.N.list[1,1:3, iter]<- c(5000, 3000, 100)
+    
     # we often want to look at different parameter values after we run code, so we create some lists
     # list to input Ks
     Klist <- vector()
@@ -91,7 +92,7 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
     Flist <- vector()
     
     emergetime <- vector()
-     
+
     TempSurvival <- vector()
     for(c in temps$Temperature){
       
@@ -112,7 +113,7 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
       
       # we start by pulling fecundities from normal distribution
       # assuming 50 50 sex ration, 0.22 of egg masses 'dissapearred', and 0.2 desiccation because of rock drying
-      F3 = fecundity  * hydropeaking.mortality(0.8, 1, h = hp[t-1])
+      F3 = fecundity  * hydropeaking.mortality(0.8, 0.99, h = hp[t-1])
       
       # we can also relate fecundities to body mass.
       # in order to iterate through different fecundities
@@ -128,16 +129,13 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
                    mean(c(emergetime[t-1]/2, emergetime[t-1]), na.rm = T),
                    emergetime[t-1])
         sizelist[t, 1:3, iter] <- sizes 
-        F3 <- ((size*mod$coefficients[2])+mod$coefficients[1]) * hydropeaking.mortality(0.8, 1, h = hp[t-1])
+        F3 <- ((size*mod$coefficients[2])+mod$coefficients[1]) * hydropeaking.mortality(0.8, 0.99, h = hp[t-1])
       }
-      # for estimating biomass for the stages 1s and stage 2, we also look at stage duration
-      # stage 3s are at the size given by sizelist (emergetime[t-1])
-      # stages 1s are at the size between 1 (since 0 biomass doesnt exist) and stage 1 duration (emergetime[t-1]/2)
-      # stage 1s are at the size between emergetime[t-1]/2 and emergetime[t-1]
       #--------------------------------------------------
       # Calculate the disturbance magnitude-K relationship
       # Sets to 0 if below the Qmin
       Qf <- Qf.Function(Q[t-1], Qmin, a)
+      
       #-------------------------------------------------------------------
       # Calculate K carrying capacity immediately following the disturbance
       K0 <- K + ((Kd-K)*Qf)
@@ -169,15 +167,15 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
       if (is.na(emergetime[t-1]) == F) {
       P1 <- (1-(1/((emergetime[t-1])/2))) *TempSurvival[t-1]
       P2 <- (1-(1/((emergetime[t-1])/2)))*TempSurvival[t-1]
-      G1 <- (0.6/((emergetime[t-1])/2))*TempSurvival[t-1]
-      G2 <- (0.3/((emergetime[t-1])/2))*TempSurvival[t-1]
+      G1 <- (0.9/((emergetime[t-1])/2))*TempSurvival[t-1]
+      G2 <- (0.7/((emergetime[t-1])/2))*TempSurvival[t-1]
     }
 
       
       if (is.na(emergetime[t-1]) == T) {
-        G1 <- (0.6/((-0.72 * temps$Temperature[t-1]) + 19.54))*TempSurvival[t-1]
+        G1 <- (0.9/((-0.72 * temps$Temperature[t-1]) + 19.54))*TempSurvival[t-1]
         P1 <- (1-(1/((-0.72 * temps$Temperature[t-1]) + 19.54)))*TempSurvival[t-1]
-        G2 <- (0.3/((-0.72 * temps$Temperature[t-1]) + 19.54))*TempSurvival[t-1]
+        G2 <- (0.7/((-0.72 * temps$Temperature[t-1]) + 19.54))*TempSurvival[t-1]
         P2 <- (1-(1/((-0.72 * temps$Temperature[t-1]) + 19.54)))*TempSurvival[t-1]
       }
       
@@ -223,17 +221,15 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
       }
       else {
         # check extinction threshold and if below set to 0
-      Total.N[t,iter] <- sum(output.N.list[t,,iter])
-      if (Total.N[t, iter] < extinction){
-        output.N.list[t,,iter] <- 0
-        Total.N[t, iter] <- 0}
+        Total.N[t,iter] <- sum(output.N.list[t,,iter])
+        if (Total.N[t, iter] < extinction){
+          output.N.list[t,,iter] <- 0
+          Total.N[t, iter] <- 0}
       }
-    } 
-    #-------------------------
+    } #-------------------------
     # End Inner Loop  
     #------------------------- 
-  } 
-  #----------------------
+  } #----------------------
   # End Outer Loop
   #----------------------
   if (stage_output == "all"){
@@ -246,6 +242,5 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
   if (stage_output == "size"){
     return(sizelist)
   }
-  
 }
 
