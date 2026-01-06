@@ -49,7 +49,7 @@ discharge <- rep(0.1, time = length(temp$dts))
 dd_seq <- seq(500*0.9, 500*1.1, length.out = 21)
 
 
-# Run Bsp (itermediate response to different scenarios) with no HFE, no hydropeaking (so no disturbance), temperature of North American temperate stream between 3 and 18 C, and fecundities from between 20 and 2000 eggs per brood. 
+# Run single-species model across DD values
 dd_means <- vector()
 for (dd in 1:length(dd_seq)){
   print(dd)
@@ -58,13 +58,10 @@ for (dd in 1:length(dd_seq)){
   dd_means[dd] <- mean(means.list.B$mean.abund)
 }
 
+# Assemble results 
 bdd_df <- as.data.frame(cbind(dd_seq, dd_means, rep("B", length(dd_means))))
 bdd_df$dd_seq <- as.numeric(bdd_df$dd_seq)
 bdd_df$dd_means <- as.numeric(bdd_df$dd_means)
-bdd_lm <- lm((dd_means/10000)~dd_seq, data = bdd_df)
-# bdd <- ggplot(data = dd_df, mapping = aes(x = dd_seq, y = dd_means/10000))+
-#   geom_point(size = 1, col = "#228833")+
-#   xlab("Degree Day Requirement")+
-#   ylab("B sp Abundance Relative to K")+
-#   theme_bw()
 
+# Fit linear model: relative abundance vs DD requirement
+bdd_lm <- lm((dd_means/10000)~dd_seq, data = bdd_df)
