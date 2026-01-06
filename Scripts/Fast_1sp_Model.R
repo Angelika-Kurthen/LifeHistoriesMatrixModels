@@ -44,11 +44,6 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
   # want to run this for one year, in 14 day timesteps 
   timestep <- seq(2, (length(temps$Temperature) + 1), by = 1)
   
-  # create an array to put our output into
-  # output.N.array <- array(0, dim = c(length(timestep) + 1))
-  # 
-  # output.N.list <- list(output.N.array)
-  # 
   # create array to put the total N of all species into
   Total.N <- array(0,
                    dim  <-c((length(timestep) +1 ), iterations),
@@ -80,27 +75,12 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
   #-------------------------
   # Outer Loop of Iterations
   #--------------------------
-  # Initializes the progress bar
-  # pb <- txtProgressBar(min = 0,      # Minimum value of the progress bar
-  #                     max = iterations, # Maximum value of the progress bar
-  #                     style = 3,    # Progress bar style (also available style = 1 and style = 2)
-  #                     width = 50,   # Progress bar width. Defaults to getOption("width")
-  #                     char = "=")   # Character used to create the bar
-  
-  for (iter in c(1:iterations)) {
-  #foreach (iter = c(1:iterations), .combine=cbind, .packages = pkgs) %dopar% {
-    #source("1spFunctions.R")
-    # Sets the progress bar to the current state
-    # setTxtProgressBar(pb, iter)
-  
-        K = Kb # need to reset K for each iteration
+  for (iter in c(1:iterations)) 
+    K = Kb # need to reset K for each iteration
     
     # pull random values from a uniform distribution 
     output.N.list[1,1:3, iter]<- runif(3, min = 1, max = (0.3*K))
-    #utput.N.list[1,1:3, iter]<- c(5000, 3000, 100)
-    
     # we often want to look at different parameter values after we run code, so we create some lists
-    
     # list to input Ks
     Klist <- vector()
     Klist[1] <- 10000
@@ -112,8 +92,6 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
     
     emergetime <- vector()
      
-    # delta <- vector()
-    # development <- vector()
     TempSurvival <- vector()
     for(c in temps$Temperature){
       
@@ -128,18 +106,13 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
       
       #----------------------------------------------------------
       # Calculate how many timesteps emerging adults have matured
-      
-      
       emergetime <- append(emergetime, back.count.degreedays(t, dds, degreedays)) # value from Sweeney et al 2017
-      # delta <- append(delta, round(devtime(temps$Temperature[t-1])/14))
       #---------------------------------------------------------
       # Calculate fecundity per adult
       
       # we start by pulling fecundities from normal distribution
       # assuming 50 50 sex ration, 0.22 of egg masses 'dissapearred', and 0.2 desiccation because of rock drying
       F3 = fecundity  * hydropeaking.mortality(0.8, 1, h = hp[t-1])
-      #F3 = rnorm(1, mean = 1104.5, sd = 42.75) * 0.5  #Baetidae egg minima and maxima from Degrange, 1960, assuming 1:1 sex ratio and 50% egg mortality
-      
       
       # we can also relate fecundities to body mass.
       # in order to iterate through different fecundities
@@ -156,11 +129,7 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
                    emergetime[t-1])
         sizelist[t, 1:3, iter] <- sizes 
         F3 <- ((size*mod$coefficients[2])+mod$coefficients[1]) * hydropeaking.mortality(0.8, 1, h = hp[t-1])
-        #F3 <- (57*size)+506 * 0.5 * hydropeaking.mortality(0.0, 0.2, h = hp[t-1]) * 0.78 * 0.65
       }
-      # size <- delta[t-1]
-      # sizelist <- append(sizelist, size)
-      # F3 <- F3 <- (41.86*size)+200 * 0.5 * hydropeaking.mortality(0.0, 0.2, h = hp[t-1]) * 0.78 * 0.65
       # for estimating biomass for the stages 1s and stage 2, we also look at stage duration
       # stage 3s are at the size given by sizelist (emergetime[t-1])
       # stages 1s are at the size between 1 (since 0 biomass doesnt exist) and stage 1 duration (emergetime[t-1]/2)
@@ -169,7 +138,6 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
       # Calculate the disturbance magnitude-K relationship
       # Sets to 0 if below the Qmin
       Qf <- Qf.Function(Q[t-1], Qmin, a)
-      
       #-------------------------------------------------------------------
       # Calculate K carrying capacity immediately following the disturbance
       K0 <- K + ((Kd-K)*Qf)
