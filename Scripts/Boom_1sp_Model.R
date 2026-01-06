@@ -117,7 +117,6 @@ Bmodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
       
       
       emergetime <- append(emergetime, back.count.degreedays(t, dds, degreedays)) # value from Sweeney et al 2017
-      # delta <- append(delta, round(devtime(temps$Temperature[t-1])/14))
       #---------------------------------------------------------
       # Calculate fecundity per adult
       
@@ -142,7 +141,6 @@ Bmodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
                    emergetime[t-1])
         sizelist[t, 1:3, iter] <- sizes 
         F3 <- ((size*mod$coefficients[2])+mod$coefficients[1]) * hydropeaking.mortality(0.0, 0.2, h = hp[t-1])
-        #F3 <- (57*size)+506 * 0.5 * hydropeaking.mortality(0.0, 0.2, h = hp[t-1]) * 0.78 * 0.65
       }
 
       #--------------------------------------------------
@@ -224,9 +222,7 @@ Bmodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
       output.N.list[t,2,iter] <- flood.mortality(output.N.list[t,2,iter], k, h, Q[t-1], Qmin)
       # 
       output.N.list[t,3,iter] <- flood.mortality(output.N.list[t,3,iter], k, h, Q[t-1], Qmin)
-      # 
-      #flowmortlist <- append(flowmortlist, flood.mortality(1, k, h, Q[t-1], Qmin))
-      # 
+
       #------------------------------------------------------
       # if any values infinity, turn to highest integer, since model breaks and considered Inf non numeric 
       if( any(is.infinite(output.N.list[t,,iter]))== T){
@@ -243,11 +239,9 @@ Bmodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
     } #-------------------------
     # End Inner Loop  
     #------------------------- 
-    #close(pb) # close progress bar
   } #----------------------
   # End Outer Loop
   #----------------------
-  #return(Klist)
   if (stage_output == "all"){
     return(output.N.list[ , 1:3, ])
   }
