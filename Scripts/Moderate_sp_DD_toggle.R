@@ -46,10 +46,9 @@ Month <- month(temp$dts)
 # no disturbance, no hydropeaking
 discharge <- rep(0.1, time = length(temp$dts))
 
-# Degree-day requirement sensitivity range ±10% around baseline degree-day requirement (1200)
+# Degree-day requirement sensitivity range ±10% around baseline degree-day requirement 
 dd_seq <- seq(1200*0.9, 1200*1.1, length.out = 21)
 
-# Run single-species model across DD values
 dd_means <- vector()
 for (dd in 1:length(dd_seq)){
   out <- Amodel(discharge, temp, baselineK = 10000, disturbanceK = 40000, Qmin = 0.25, extinct = 50, iteration = 2, peaklist = 0, peakeach = length(temp$Temperature), dds = dd_seq[dd])
