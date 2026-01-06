@@ -1,5 +1,5 @@
 ##########################
-# A sp model
+# Fast Life History model
 ###########################
 
 library(purrr)
@@ -9,7 +9,8 @@ library(dplyr)
 library(ggplot2)
 # data retrieval tool from USGS
 library(dataRetrieval)
-source("LifeHistoriesMatrixModels/Scripts/1spFunctions.R")
+# source bespoke functions
+source("Scripts/1spFunctions.R")
 
 Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct, iteration, peaklist = NULL, peakeach = NULL, fecundity = 500, dds = 1200, stage_output = "all", dens.dep = T){
   
