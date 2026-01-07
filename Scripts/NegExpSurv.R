@@ -1,11 +1,6 @@
 ##############################
 # Code to calculate negative exponential fit of survivorships
 ##############################
-
-
-# Code for HPC - tidyverse has some issues on our HPC because one of the packages is deprecated
-
-#library(minpack.lm, lib.loc = "/home/ib/kurthena/R_libs/4.2.1")
 library(minpack.lm)
 library(readxl)
 
@@ -51,20 +46,8 @@ low.df <- as.data.frame(cbind(low.df, rep("Low Response", times = length(low.df$
 colnames(low.df) <- c("Q", "Survival", "Response")
 
 df <- as.data.frame(rbind(high.df, med.df, low.df))
-# ggplot(df, aes(x = Q, y = Survival, col = Response))+
-#   geom_line()+
-#   #geom_point(data = HYOSVitalRates, aes(x = `Max Event Discharge/Bankfull Discharge` , y = 1-(Mortality), color = Citation))+
-#   #coord_cartesian(ylim = c(0,1)) +
-#   ylab('Immediate Post-Disturbance Survival') +
-#   theme_bw()+
-#   xlab('`Max Event Discharge/Bankfull Discharge`')
 
-
-#we know crit max and min of Temperate 
-# https://besjournals.onlinelibrary.wiley.com/doi/10.1111/1365-2435.12906
-# adjusted that to fit a known survival curve (neg binom dist)
-
-HYOSSurvRates <- read_excel("LifeHistoriesMatrixModels/Data/VitalRates.xlsx", sheet = "Hydropsyche Survival Rates ")
+HYOSSurvRates <- read_excel("Data/VitalRates.xlsx", sheet = "Hydropsyche Survival Rates ")
 HYOSSurvRates <- as.data.frame(HYOSSurvRates)
 
 TempSurv <- function(n){
@@ -75,14 +58,3 @@ TempSurv <- function(n){
   }
   return((a))
 }
-# TempSurv <- function(x){
-#   a <- -0.09934 *x^2 +3.44127*x -15.47038
-#   return(inv.logit(a))
-# }
-# tem <- seq(0, 40, by = 1)
-# temSurv <- unlist(lapply(tem, TempSurv))
-# tempsurvdf <- as.data.frame(cbind(tem, temSurv))
-#  plot(HYOSSurvRates$Temperature, HYOSSurvRates$Survival, col = "red", pch = 16, xlab = "Temperature", ylab = "Survival", xlim = c(0,40), ylim = c(0, 1))
-#  lines(tem,  unlist(lapply(tem, TempSurv)))
-
-
