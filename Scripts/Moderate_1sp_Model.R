@@ -76,7 +76,7 @@ Amodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct,
   #-------------------------
   # Outer Loop of Iterations
   #--------------------------
-  for (iter in c(1:iterations)) 
+  for (iter in c(1:iterations)) {
     K = Kb # need to reset K for each iteration
     
     # pull random values from a uniform distribution 
