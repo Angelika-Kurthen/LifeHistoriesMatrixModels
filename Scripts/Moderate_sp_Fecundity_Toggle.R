@@ -33,7 +33,7 @@ temp <- as.data.frame(cbind(Time, Day, Temperature))
 temp$Day <- as.Date(temp$Day, origin= "1970-01-01")
 colnames(temp) <- c("Time", "Date", "Temperature")
 
-# Convert to timestep-based temperature object
+# Combine time, date, and temperature into a data frame
 temp <- TimestepTemperature(temp)
 
 # Keep only timestep and temperature columns
@@ -65,4 +65,4 @@ a_fec_df$fec_seq <- as.numeric(a_fec_df$fec_seq)
 a_fec_df$fec_means <- as.numeric(a_fec_df$fec_means)
 
 # Fit linear model: relative abundance vs fecundity
-afec_lm <- lm((fec_means/10000) ~ fec_seq, data = a_fec_df)
+afec_lm <- lm(log(fec_means) ~ fec_seq, data = a_fec_df)
