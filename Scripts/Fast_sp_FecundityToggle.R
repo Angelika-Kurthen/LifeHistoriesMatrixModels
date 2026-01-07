@@ -1,13 +1,14 @@
 #############################
-# C sp fecundity toggle
+# Fast Life History fecundity toggle
 ############################
 library(lubridate)
-#Code for HPC
-#library(lubridate, lib.loc = "/home/ib/kurthena/R_libs/4.2.1")
 
-source("LifeHistoriesMatrixModels/Scripts/C_1sp_Model.R")
-source("LifeHistoriesMatrixModels/Scripts/1spFunctions.R")
-source("LifeHistoriesMatrixModels/Scripts/NegExpSurv.R")
+# Fast_1sp_Model.R: Fast Life History population model
+# 1spFunctions.R: bespoke functions
+# NegExpSurv.R: negative exponential survival function for disturbance
+source("Scripts/Fast_1sp_Model.R")
+source("Scripts/1spFunctions.R")
+source("Scripts/NegExpSurv.R")
 
 Time <- c(1:36500)
 Date <- rep(1:365, times = 100)
