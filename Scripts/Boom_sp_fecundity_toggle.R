@@ -47,7 +47,7 @@ discharge <- rep(0.1, time = length(temp$dts))
 # Degree-day requirement sensitivity range ±10% around baseline fecundity 
 fec_seq <- seq(1200*0.9, 1200*1.1, length.out = 21)
 
-# Run single-species model across frequency values
+# Run single-species model across fecundity values
 fec_means <- vector()
 for (fec in 1:length(fec_seq)){
 print(fec)
