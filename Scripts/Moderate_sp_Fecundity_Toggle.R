@@ -50,7 +50,7 @@ discharge <- rep(0.1, time = length(temp$dts))
 fec_seq <- seq(500*0.9, 500*1.1, length.out = 21)
 
 
-# Run single-species model across frequency values
+# Run single-species model across fecundity values
 fec_means <- vector()
 for (fec in 1:length(fec_seq)){
   print(fec)
