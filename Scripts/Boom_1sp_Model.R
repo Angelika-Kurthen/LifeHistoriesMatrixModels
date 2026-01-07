@@ -19,7 +19,7 @@ source("Scripts/1spFunctions.R")
 Bmodel <- function(flow.data, temp.data, baselineK, disturbanceK, Qmin, extinct, iteration, peaklist = NULL, peakeach = NULL, fecundity = 1200, dds = 500, stage_output = "all", dens.dep = T){
   
   # set up model
-  source("LifeHistoriesMatrixModels/Scripts/NegExpSurv.R")
+  source("Scripts/NegExpSurv.R")
   Q <- as.numeric(flow.data)
   temps <- temp.data
   
