@@ -33,7 +33,6 @@ temp <- as.data.frame(cbind(Time, Day, Temperature))
 temp$Day <- as.Date(temp$Day, origin= "1970-01-01")
 colnames(temp) <- c("Time", "Date", "Temperature")
 
-# Combine time, date, and temperature into a data frame
 temp <- TimestepTemperature(temp)
 temp <- temp[c(1,3)]
 
