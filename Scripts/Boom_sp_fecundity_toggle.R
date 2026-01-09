@@ -62,4 +62,7 @@ b_fec_df$fec_seq <- as.numeric(b_fec_df$fec_seq)
 b_fec_df$fec_means <- as.numeric(b_fec_df$fec_means)
 
 # Fit linear model: relative abundance vs fecundity
-bfec_lm <- lm(log(fec_means) ~ fec_seq, data = b_fec_df)
+bfec_lm <- lm(fec_means ~ fec_seq, data = b_fec_df)
+
+# clear means
+rm(fec_means)
