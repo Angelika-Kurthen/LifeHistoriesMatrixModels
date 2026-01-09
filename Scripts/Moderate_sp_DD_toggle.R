@@ -60,7 +60,10 @@ for (dd in 1:length(dd_seq)){
 # Assemble results 
 add_df <- as.data.frame(cbind(dd_seq, dd_means, rep("A", length(dd_means))))
 add_df$dd_seq <- as.numeric(add_df$dd_seq)
-add_df$dd_means <- as.numeric(add_df$dd_seq)
+add_df$dd_means <- as.numeric(add_df$dd_means)
 
 # Fit linear model: relative abundance vs DD requirement
-add_lm <- lm((dd_means/10000) ~ dd_seq, data= add_df)
+add_lm <- lm(dd_means ~ dd_seq, data= add_df)
+
+# clear means
+rm(dd_means)

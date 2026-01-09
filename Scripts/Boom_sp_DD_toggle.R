@@ -64,4 +64,7 @@ bdd_df$dd_seq <- as.numeric(bdd_df$dd_seq)
 bdd_df$dd_means <- as.numeric(bdd_df$dd_means)
 
 # Fit linear model: relative abundance vs DD requirement
-bdd_lm <- lm((dd_means/10000)~dd_seq, data = bdd_df)
+bdd_lm <- lm(dd_means~dd_seq, data = bdd_df)
+
+# clear means
+rm(dd_means)
