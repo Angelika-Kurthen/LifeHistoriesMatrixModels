@@ -7,7 +7,7 @@ library(lubridate)
 # Slow_1sp_Model.R: Slow Life History population model
 # 1spFunctions.R: bespoke functions
 # NegExpSurv.R: negative exponential survival function for disturbance
-source("Scripts/D_1sp_Model.R")
+source("Scripts/Slow_1sp_Model.R")
 source("Scripts/1spFunctions.R")
 source("Scripts/NegExpSurv.R")
 
