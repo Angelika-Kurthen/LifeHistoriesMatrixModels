@@ -80,9 +80,9 @@ DensDep <- ggplot(data = dens.dep, aes(x = Date, y  =(Abundance), color = Taxa))
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, angle = 45, size = 12.5),
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-Fig1 <- ggarrange(DensDep, logthreeyearplot,
-                  labels = c("a", "b"), hjust = 0, vjust = 0.5,
-                  ncol = 1, nrow = 2, common.legend = T)
+Fig1 <- ggarrange(DensInd, DensDep, logthreeyearplot,
+                  labels = c("a", "b", "c"), hjust = 0, vjust = 0.5,
+                  ncol = 1, nrow = 3, common.legend = T)
 ggsave(filename = "Fig1.png", plot= Fig1, width = 6.5, height= 8.5, device = "png", dpi = "retina" )
 
 
@@ -313,7 +313,7 @@ source("LifeHistoriesMatrixModels/Scripts/D_sp_Fecundity_Toggle.R")
 
 fec_df <- rbind(a_fec_df, b_fec_df, c_fec_df, d_fec_df)
 fec_df$V3 <- factor(fec_df$V3, levels = c("B", "C", "A", "D"))
-FigS3 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means/10000, color = V3))+
+FigS3 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means, color = V3))+
   geom_point(size = 1, alpha = 0.5)+
   stat_smooth(method = "lm",
               position = "identity", 
@@ -329,7 +329,7 @@ FigS3 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means/10000, color = V3))+
              size=1)+
   theme_bw()+
   xlab("Fecundity (# of eggs)")+
-  ylab("Relativized Abundance")+
+  ylab("Population Abundance")+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
@@ -345,7 +345,7 @@ source("LifeHistoriesMatrixModels/Scripts/D_sp_DD_Toggle.R")
 
 dd_df <- rbind(add_df, bdd_df, cdd_df, ddd_df)
 dd_df$V3 <- factor(dd_df$V3, levels = c("B", "C", "A", "D"))
-FigS4 <- ggplot(data = dd_df, aes(dd_seq, dd_means/10000, color = V3)) + 
+FigS4 <- ggplot(data = dd_df, aes(dd_seq, dd_means, color = V3)) + 
   geom_point(size = 1, alpha = 0.5)+
   stat_smooth(method = "lm", 
               position = "identity",
@@ -361,7 +361,7 @@ FigS4 <- ggplot(data = dd_df, aes(dd_seq, dd_means/10000, color = V3)) +
              size=1)+
   theme_bw()+
   xlab("Degree Days to Emergence")+
-  ylab("Relativized Abundance")+
+  ylab("Population Abundance")+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
@@ -379,7 +379,7 @@ FigS5 <- ggplot(data = KQT, aes(x = t , y = Q))+
   ylab("LifeHistoriesMatrixModels/Scripts/Disturbance Magnitude")+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))+
-  guides(fill=guide_legend(title="K (carrying capacity)"))+
+  guides(fill=guide_legend(title="K"))+
   theme(strip.text.x = element_text(size = 14), 
         strip.background = element_rect(
           color="black", fill="white", linetype="solid"))+
