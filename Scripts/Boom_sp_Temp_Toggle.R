@@ -98,11 +98,11 @@ b_size_df$size_means <- as.numeric(b_size_df$size_means)
 
 # we can plot
 
-btemp <- ggplot(data = temp_adjust_df, mapping = aes(x = temp_seq, y = temp_means/10000))+
-  geom_line(size = 1, col = "#228833")+
-  xlab("Degree C Change")+
-  ylab("B sp Abundance Relative to K")+
-  theme_bw()
+# btemp <- ggplot(data = temp_adjust_df, mapping = aes(x = temp_seq, y = temp_means/10000))+
+#   geom_line(size = 1, col = "#228833")+
+#   xlab("Degree C Change")+
+#   ylab("B sp Abundance Relative to K")+
+#   theme_bw()
 
 ################################
 # How does abundance, size, and biomass 
