@@ -26,7 +26,7 @@ strategy_scale <- scale_color_manual(
 #----------------------------------------
 # Produce Figure 1
 #----------------------------------------
-source("LifeHistoriesMatrixModels/Scripts/Annual.R")
+source("Scripts/Annual.R")
 
 yr4temp <- ggplot(data = subset(temp, dts >= "2031-07-21" & dts <= "2033-12-20"), aes(as.Date(dts), Temperature))+
   geom_line(size = 0.8)+
@@ -90,19 +90,19 @@ ggsave(filename = "Fig1.png", plot= Fig1, width = 6.5, height= 8.5, device = "pn
 # Produce Figure 2
 #-----------------------------------------
 
-source("LifeHistoriesMatrixModels/Scripts/SpA_Multivolt.R")
-source("LifeHistoriesMatrixModels/Scripts/SpB_Multivolt.R")
-source("LifeHistoriesMatrixModels/Scripts/SpC_Multivolt.R")
-source("LifeHistoriesMatrixModels/Scripts/SPD_Multivolt.R")
+source("Scripts/Boom_Multivolt.R")
+source("Scripts/Fast_Multivolt.R")
+source("Scripts/Moderate_Mulitvolt.R")
+source("Scripts/Slow_Multivolt.R")
 
+# get output from each script, combine into one large dataframe
 oneyear <- rbind(B.oneyear, C.oneyear, A.oneyear, D.oneyear)
 
-
-# Define arrow positions
+# Define arrow positions based on where local maxima are
 arrow_data <- data.frame(
   Strategy = c("Boom", "Boom", "Boom", "Boom", "Boom", "Boom", "Boom", "Boom",
                "Fast", "Fast", "Fast", "Fast", "Fast", "Fast",
-               "Moderate","Moderate","Moderate", "Slow","Slow", "Slow"),  # Adjust these to match your facet variable levels
+               "Moderate","Moderate","Moderate", "Slow","Slow", "Slow"),  
   MeanTemp = c(1,1,1, 2, 2,2,2,2,
                1,1,2,2,2,2, 
                1,2,2,1,2,2),
@@ -120,6 +120,9 @@ arrow_data <- data.frame(
               9, 9, 9, 9, 9, 9)  # Adjust arrow end points
 )
 
+
+
+# plot
 Fig2 <- ggplot(data = oneyear, aes(x = Date, y = log(Abund), group = as.factor(MeanTemp), color = as.factor(MeanTemp)))+
   geom_line(size = 1, alpha = 0.8)+
   scale_color_manual(name = "Mean Temperature (C)", labels = c("12", "20"), values = c("#4477AA", "#EE6677"))+
@@ -128,9 +131,9 @@ Fig2 <- ggplot(data = oneyear, aes(x = Date, y = log(Abund), group = as.factor(M
   scale_x_date(date_labels="%B", date_breaks  ="2 month")+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, angle=45, size = 12.5), 
         axis.text.y = element_text(size = 13),legend.position = "bottom", legend.key = element_rect(fill = "transparent"))+
-  facet_wrap(~Strategy)+
-  geom_segment(data = arrow_data, aes(x = x_start, y = y_start, xend = x_end, yend = y_end, color = as.factor(MeanTemp)), 
-               arrow = arrow(type = "closed", length = unit(0.1, "inches")), 
+  facet_wrap(~Strategy) +
+  geom_segment(data = arrow_data, aes(x = x_start, y = y_start, xend = x_end, yend = y_end, color = as.factor(MeanTemp)),
+               arrow = arrow(type = "closed", length = unit(0.1, "inches")),
                inherit.aes = FALSE, show.legend = F)
 ggsave(filename = "Fig2.png", Fig2, height = 5, width = 5, device = "png", dpi = "retina")
 
@@ -139,12 +142,14 @@ ggsave(filename = "Fig2.png", Fig2, height = 5, width = 5, device = "png", dpi =
 # Produce Figure 3
 #----------------------------------
 # code for temperature regime shift 
-source("LifeHistoriesMatrixModels/Scripts/A_sp_Temp_Toggle.R")
-source("LifeHistoriesMatrixModels/Scripts/Bsp_Temp_Toggle.R")
-source("LifeHistoriesMatrixModels/Scripts/CspTempToggle.R")
-source("LifeHistoriesMatrixModels/Scripts/D_sp_TempToggle.R")
+source("Scripts/Moderate_sp_Temp_Toggle.R")
+source("Scripts/Boom_sp_Temp_Toggle.R")
+source("Scripts/Fast_spTempToggle.R")
+source("Scripts/Slow_Sp_TempToggle.R")
 
+#combine all datasets with mean abundance as temperature regime changes together
 temp_df <- rbind(a_temp_adjust_df, b_temp_adjust_df ,c_temp_adjust_df ,d_temp_adjust_df)
+
 # Reorder factor levels for correct legend order
 temp_df$V3 <- factor(temp_df$V3, levels = c("B", "C", "A", "D"))
 
@@ -161,11 +166,13 @@ abund <- ggplot(data = temp_df, aes(temp_regime, log(temp_means), color = V3))+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"), plot.margin = margin(5,5,5,20))
 
-
+#combine all datasets with mean individual size as temperature regime changes together
 size_df <- rbind(a_size_df, b_size_df, c_size_df, d_size_df)
+
 # Reorder factor levels for correct legend order
 size_df$V4 <- factor(size_df$V4, levels = c("B", "C", "A", "D"))
 
+#plot
 biomass <- ggplot(data = size_df, aes(temp_regime, stage3s_means, color = V4))+
   geom_line(size = 1, alpha = 0.8)+
   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
@@ -178,8 +185,11 @@ biomass <- ggplot(data = size_df, aes(temp_regime, stage3s_means, color = V4))+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"), plot.margin = margin(5,5,5,20))
 
+# multiply abundance by individual body size to get total standing biomass per timestep
 size_df$totbiomass <- temp_df$temp_means * size_df$size_means
 
+#plot
+# note: divde by 1000 to get g from mg
 totbiomass <- ggplot(data = size_df, aes(temp_regime, totbiomass/1000, color = V4))+
   geom_line(size = 1, alpha = 0.8)+
   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
@@ -202,9 +212,6 @@ ggsave(filename = "Fig3.png", plot = Fig3, device = "png", width = 6.5, height =
 ## Produce Figure 4
 #----------------------------------
 temp_dist <- bind_rows(temp_dist_a, temp_dist_b, temp_dist_c, temp_dist_d, .id = "taxa")
-
-# deltatemp <- subset(temp_dist, season == 3)
-# temp_dist <- subset(temp_dist, season < 3)
 
 supp.labs <- c("Winter Disturbance", "Summer Disturbance", "\u0394 Abundance")
 names(supp.labs) <- c("1", "2", "3")
