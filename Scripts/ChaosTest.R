@@ -5,6 +5,8 @@
 
 # load packages
 require(Chaos01)
+require(tseriesChaos)
+
 
 # Boom_1sp_Model.R: Boom Life History population model
 # 1spFunctions.R: bespoke functions
@@ -69,4 +71,17 @@ outstable2 <- mean.data.frame(outstable, 250, 2)
 length(unique(outstable2$mean.abund))
 stabledf <- as.data.frame(cbind(outstable2$mean.abund[1:2359], outstable2$mean.abund[2:2360]))
 
+# try with Lyapunov Exponent
+
+le <- vector()
+fecs <- seq(1200, 100000, by = 2000)
+for (fec in 1:length(fecs)){
+  out1 <- Bmodel(discharge, temp, baselineK = 10000, disturbanceK = 40000, Qmin = 0.25, extinct = 50, iteration = 2, peaklist = 0, peakeach = length(temp$Temperature), fecundity = fecs[fec])
+  out2 <- mean.data.frame(out1, 250, 2)
+  out3 <- as.vector(out2$mean.abund)
+  lyapun <- lyap_k(out3, m=1, d=2, s=200, t=40, ref=1700, k=2, eps=4)
+  le[fec] <- max(lyapun)
+}
+
+# same results as chaos 0-1 test 
 
