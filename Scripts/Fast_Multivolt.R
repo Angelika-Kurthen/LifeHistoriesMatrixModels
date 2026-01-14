@@ -49,18 +49,5 @@ mlist <- rbind(m1, m2)
 colnames(mlist) <- c("Date", "Abund", "MeanTemp")
 # subset one year 
 C.oneyear <- mlist[which(mlist$Date >= "2035-01-01" & mlist$Date <= "2035-12-31"), ]
-# peaks <- C.oneyear[c(15, 19, 28, 36, 41, 45), ]
-# arrows <- tibble(
-#   x1 = peaks$Date,
-#   x2 = peaks$Date,
-#   y1 = c(8.7, 8.7, 8.7, 10.7, 9.3, 10.700), 
-#   y2 = c(8.3, 8.3, 8.3, 10.3, 8.9, 10.3000)
-# )
-# arrowcols <- c("#4477AA", "#4477AA", "#EE6677","#EE6677", "#EE6677","#EE6677")
-# arrows$x1 <- as.POSIXct(arrows$x1, format = "%Y-%m-%d")
-# arrows$x1 <- as.Date(arrows$x1)
-# arrows$x2 <- as.POSIXct(arrows$x2, fomrat = "%Y-%m_%d")
-# arrows$x2 <- as.Date(arrows$x2)
-# C.oneyear$Date <- as.Date(C.oneyear$Date)
-# C.oneyear$Strategy <- rep("Fast", times = length(C.oneyear$Date))
-# #create list of peak points
+C.oneyear$Date <- as.Date(C.oneyear$Date)
+C.oneyear$Strategy <- rep("Fast", times = length(C.oneyear$Date))

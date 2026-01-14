@@ -49,22 +49,5 @@ mlist <- rbind(m1, m2)
 colnames(mlist) <- c("Date", "Abund", "MeanTemp")
 # subset one year 
 B.oneyear <- mlist[which(mlist$Date >= "2035-01-01" & mlist$Date <= "2035-12-31"), ]
-# label peaks
-# peaks <- B.oneyear[c(16, 40, 46, 61, 66, 71, 80, 86, 91, 95, 100), ]
-# # create tibble for where we want arrows to point at peaks
-# arrows <- tibble(
-#   x1 = peaks$Date,
-#   x2 = peaks$Date,
-#   y1 = c(8000, 16900, 14000, 6100, 14800, 11000, 4200, 8000 , 6300, 8500, 20200), 
-#   y2 = c(6000, 14900, 12000, 4100, 12800, 9000, 2200, 6000 , 4300, 6500, 18200)
-# )
-# # assign colors for arrows
-# arrowcols <- c("#4477AA", "#EE6677","#EE6677", "#228833","#228833","#228833","#CCBB44","#CCBB44","#CCBB44", "#CCBB44","#CCBB44")
-# 
-# # make sure all dates are in date format
-# arrows$x1 <- as.POSIXct(arrows$x1, format = "%Y-%m-%d")
-# arrows$x1 <- as.Date(arrows$x1)
-# arrows$x2 <- as.POSIXct(arrows$x2, fomrat = "%Y-%m_%d")
-# arrows$x2 <- as.Date(arrows$x2)
-# B.oneyear$Date <- as.Date(B.oneyear$Date)
-# B.oneyear$Strategy <- rep("Boom", times = length(B.oneyear$Date))
+B.oneyear$Date <- as.Date(B.oneyear$Date)
+B.oneyear$Strategy <- rep("Boom", times = length(B.oneyear$Date))
