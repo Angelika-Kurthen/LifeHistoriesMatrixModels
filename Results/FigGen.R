@@ -10,19 +10,6 @@ library(renv)
 renv::init()
 renv::snapshot()
 
-
-strategy_colors <- c(
-  Boom = "#228833",
-  Fast = "#CCBB44",
-  Moderate = "#66CCEE",
-  Slow = "#AA3377"
-)
-
-strategy_scale <- scale_color_manual(
-  name = "Strategy",
-  values = strategy_colors
-)
-
 #----------------------------------------
 # Produce Figure 1
 #----------------------------------------
@@ -53,7 +40,7 @@ logthreeyearplot <- ggplot(data = threeyear, aes(x = Date, y  =
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
 
-source("LifeHistoriesMatrixModels/Scripts/DensIndependence.R")
+source("Scripts/DensIndependence.R")
 dens.ind$Taxa <- factor(dens.ind$Taxa, levels = c("B", "C", "A", "D"))
 DensInd <- ggplot(data = dens.ind, aes(x = Date, y  =log(Abundance), color = Taxa))+
   geom_point(size = 1, alpha = 0.5)+
@@ -66,7 +53,7 @@ DensInd <- ggplot(data = dens.ind, aes(x = Date, y  =log(Abundance), color = Tax
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, angle = 45, size = 12.5),
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-source("LifeHistoriesMatrixModels/Scripts/DensityDependence.R")
+source("Scripts/DensityDependence.R")
 dens.dep$Taxa <- factor(dens.dep$Taxa, levels = c("B","C", "A", "D"))
 DensDep <- ggplot(data = dens.dep, aes(x = Date, y  =(Abundance), color = Taxa))+
   geom_point(size = 1, alpha = 0.5)+
@@ -83,7 +70,7 @@ DensDep <- ggplot(data = dens.dep, aes(x = Date, y  =(Abundance), color = Taxa))
 Fig1 <- ggarrange(DensInd, DensDep, logthreeyearplot,
                   labels = c("a", "b", "c"), hjust = 0, vjust = 0.5,
                   ncol = 1, nrow = 3, common.legend = T)
-ggsave(filename = "Fig1.png", plot= Fig1, width = 6.5, height= 8.5, device = "png", dpi = "retina" )
+ggsave(filename = "Output/Fig1.png", plot= Fig1, width = 6.5, height= 8.5, device = "png", dpi = "retina" )
 
 
 #-----------------------------------------
@@ -135,7 +122,7 @@ Fig2 <- ggplot(data = oneyear, aes(x = Date, y = log(Abund), group = as.factor(M
   geom_segment(data = arrow_data, aes(x = x_start, y = y_start, xend = x_end, yend = y_end, color = as.factor(MeanTemp)),
                arrow = arrow(type = "closed", length = unit(0.1, "inches")),
                inherit.aes = FALSE, show.legend = F)
-ggsave(filename = "Fig2.png", Fig2, height = 5, width = 5, device = "png", dpi = "retina")
+ggsave(filename = "Output/Fig2.png", Fig2, height = 5, width = 5, device = "png", dpi = "retina")
 
 
 #----------------------------------
@@ -206,20 +193,23 @@ Fig3<- ggarrange(abund, biomass, totbiomass,
           labels = c("a", "b", "c"),
           ncol = 1, nrow = 3, common.legend = T)
 
-ggsave(filename = "Fig3.png", plot = Fig3, device = "png", width = 6.5, height = 8.5, dpi = "retina")
+ggsave(filename = "Output/Fig3.png", plot = Fig3, device = "png", width = 6.5, height = 8.5, dpi = "retina")
 
 #----------------------------------
 ## Produce Figure 4
 #----------------------------------
+# bind together winter v summer disturbance abundances
 temp_dist <- bind_rows(temp_dist_a, temp_dist_b, temp_dist_c, temp_dist_d, .id = "taxa")
-
+# assign labels
 supp.labs <- c("Winter Disturbance", "Summer Disturbance", "\u0394 Abundance")
 names(supp.labs) <- c("1", "2", "3")
-#temp_dist[which(is.na(temp_dist$V3)), ] <- -Inf
 
+# if anything is NA, make it a -Inf so it doesn't show up
 temp_dist$V3[which(is.na(temp_dist$V3))] <- -Inf
+# assign new levels to the taxa to dictate color order
 temp_dist$taxa <- factor(temp_dist$taxa, levels = c("2", "3", "1", "4"))
 
+# plot
 d <- ggplot(data = temp_dist, aes(x = temp_regime, y = V3, color = taxa))+
   geom_line(linewidth = 1, alpha = 0.8)+
   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
@@ -232,12 +222,15 @@ d <- ggplot(data = temp_dist, aes(x = temp_regime, y = V3, color = taxa))+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"), plot.margin = margin(5,5,5,20))
 
+# bind together winter v summer disturbance biomasses
 temp_size <- bind_rows(temp_size_a, temp_size_b, temp_size_c, temp_size_d, .id = "taxa")
+# assign new levels to the taxa to dictate color order
 temp_dist$taxa <- factor(temp_dist$taxa, levels = c("2", "3", "1", "4"))
-
+# rename labels
 supp.labs <- c("Winter Disturbance", "Summer Disturbance", "\u0394 Biomass")
 names(supp.labs) <- c("1", "2", "3")
 
+#plot 
 es <- ggplot(data = temp_size, aes(x = temp_regime, y = size_means/1000, color = taxa))+
   geom_line(linewidth = 1, alpha = 0.8)+
   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
@@ -251,13 +244,14 @@ es <- ggplot(data = temp_size, aes(x = temp_regime, y = size_means/1000, color =
 
 Fig4 <- ggarrange(d, es, nrow  = 2, labels = c("a","b"))
 
-ggsave(filename = "Fig4.png", plot = Fig4, device = "png", width = 7.5, height = 8.5, dpi = "retina")
+ggsave(filename = "Output/Fig4.png", plot = Fig4, device = "png", width = 7.5, height = 8.5, dpi = "retina")
 
 #--------------------------------
 ## Produce Figure S1
 #--------------------------------
-source("LifeHistoriesMatrixModels/Scripts/HilbertMetric.R")
+source("Scripts/ChaosTest.R")
 
+#plot Chaos 0-1 test results vs fecundity
 chaostestplot <- ggplot(data = chaostestdf, aes(x = fecs, y = chaos1))+
   geom_point(alpha = 0.8)+
   xlab("Stage 3 Boom Fecundity")+
@@ -266,6 +260,7 @@ chaostestplot <- ggplot(data = chaostestdf, aes(x = fecs, y = chaos1))+
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))+
   theme_bw()
 
+#plot log abundances vs time for fecundity = 5200
 chaosts<- ggplot(data = outchaos2[250:500,], aes(x = as.numeric(timesteps), y = log(mean.abund), group = 1))+
   geom_line(linewidth = 1, col = "#4477AA")+
   xlab("Timestep")+
@@ -275,6 +270,7 @@ chaosts<- ggplot(data = outchaos2[250:500,], aes(x = as.numeric(timesteps), y = 
   scale_x_continuous(breaks = seq(250, 2600, by = 250))+
   theme_bw()
 
+# plot N vs N(t+1) for fecundity = 5200
 chaosn <- ggplot(data = chaosdf, aes(x = log(V1), y = log(V2)))+
   geom_point(col = "#4477AA", alpha = 0.8)+
   geom_line(linewidth = 1, col = "#4477AA")+
@@ -286,6 +282,7 @@ chaosn <- ggplot(data = chaosdf, aes(x = log(V1), y = log(V2)))+
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))+
   theme_bw()
 
+#plot log abundances vs time for fecundity = 1200
 stablets <- ggplot(data = outstable2[250:500,], aes(x = as.numeric(timesteps), y = log(mean.abund), group = 1))+
   geom_line(linewidth = 1, col = "#EE6677")+
   xlab("Timestep")+
@@ -295,6 +292,7 @@ stablets <- ggplot(data = outstable2[250:500,], aes(x = as.numeric(timesteps), y
   scale_x_continuous(breaks = seq(250, 2600, by = 250))+
   theme_bw()
 
+# plot N vs N(t+1) for fecundity = 1200
 stablen <- ggplot(data = stabledf, aes(x = log(V1), y = log(V2)))+
   geom_point(alpha = 0.8, col = "#EE6677")+
   geom_line(linewidth = 1,col = "#EE6677")+
@@ -306,21 +304,52 @@ stablen <- ggplot(data = stabledf, aes(x = log(V1), y = log(V2)))+
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))+
   theme_bw()
 
-FigS3 <- ggarrange(chaostestplot,
+# combine plots
+FigS1 <- ggarrange(chaostestplot,
           ggarrange(chaosn, chaosts, stablen, stablets, ncol = 2, nrow = 2, vjust = 0.5, labels = c("b", "c", "d", "e")),
           labels = "a",
           nrow = 2, common.legend = T)
 
-ggsave(filename = "FigS3.png", FigS3, height = 8.5, width = 6.5, device = "png", dpi = "retina")
+ggsave(filename = "Output/FigS1.png", FigS1, height = 8.5, width = 6.5, device = "png", dpi = "retina")
 
-source("LifeHistoriesMatrixModels/Scripts/A_sp_Fecundity_Toggle.R")
-source("LifeHistoriesMatrixModels/Scripts/B_sp_fecundity_Toggle.R")
-source("LifeHistoriesMatrixModels/Scripts/C_sp_FecundityToggle.R")
-source("LifeHistoriesMatrixModels/Scripts/D_sp_Fecundity_Toggle.R")
+#-------------------------------
+## Produce Figure S2 
+#-------------------------------
+# heatmap for K in response to Disturbance and time post disturbance
+source("Scripts/Kwireplot.R")
+# plot
+FigS2 <- ggplot(data = KQT, aes(x = t , y = Q))+
+  geom_raster(aes(fill = K), interpolate = T)+
+  scale_fill_viridis_c(option = "magma") +
+  scale_color_grey()+
+  labs(shape = "") +
+  theme_bw()+
+  xlab("Timesteps Post Disturbance")+
+  ylab("Disturbance Magnitude (Fraction Bankfull Discharge)")+
+  theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
+        axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))+
+  guides(fill=guide_legend(title="K"))+
+  theme(strip.text.x = element_text(size = 14), 
+        strip.background = element_rect(
+          color="black", fill="white", linetype="solid"))+
+  theme(legend.margin = margin(-1,0,0,0, unit="cm"))
 
+ggsave(filename = "Output/FigS2.png", FigS2, height = 5, width = 6, device = "png", dpi = "retina")
+
+#--------------------------------
+## Produce Figure S4
+#--------------------------------
+source("Scripts/Boom_sp_Fecundity_Toggle.R")
+source("Scripts/Fast_sp_FecundityToggle.R")
+source("Scripts/Moderate_sp_Fecundity_Toggle.R")
+source("Scripts/Slow_sp_Fecundity_Toggle.R")
+
+# combine fecundity sensitivity analysis dataframes
 fec_df <- rbind(a_fec_df, b_fec_df, c_fec_df, d_fec_df)
+# refactor to match names
 fec_df$V3 <- factor(fec_df$V3, levels = c("B", "C", "A", "D"))
-FigS3 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means, color = V3))+
+# plot
+FigS4 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means, color = V3))+
   geom_point(size = 1, alpha = 0.5)+
   stat_smooth(method = "lm",
               position = "identity", 
@@ -340,19 +369,24 @@ FigS3 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means, color = V3))+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-ggsave(filename = "FigS3.png", plot = FigS3, device = "png", width = 6, height = 5, dpi = "retina")
+ggsave(filename = "Output/FigS4.png", plot = FigS4, device = "png", width = 6, height = 5, dpi = "retina")
 
 
+#--------------------------------
+## Produce Figure S5
+#--------------------------------
 
-# code for degree day sensitivity analysis
-source("LifeHistoriesMatrixModels/Scripts/A_sp_DD_toggle.R")
-source("LifeHistoriesMatrixModels/Scripts/B_sp_DD_toggle.R")
-source("LifeHistoriesMatrixModels/Scripts/CspDDToggle.R")
-source("LifeHistoriesMatrixModels/Scripts/D_sp_DD_Toggle.R")
+source("Scripts/Boom_sp_DD_toggle.R")
+source("Scripts/Fast_sp_DD_toggle.R")
+source("Scripts/Moderate_sp_DD_Toggle.R")
+source("Scripts/Slow_sp_DD_Toggle.R")
 
+# load degree day sensitivity analysis
 dd_df <- rbind(add_df, bdd_df, cdd_df, ddd_df)
+# reorder to match names
 dd_df$V3 <- factor(dd_df$V3, levels = c("B", "C", "A", "D"))
-FigS4 <- ggplot(data = dd_df, aes(dd_seq, dd_means, color = V3)) + 
+# plot
+FigS5 <- ggplot(data = dd_df, aes(dd_seq, dd_means, color = V3)) + 
   geom_point(size = 1, alpha = 0.5)+
   stat_smooth(method = "lm", 
               position = "identity",
@@ -372,35 +406,14 @@ FigS4 <- ggplot(data = dd_df, aes(dd_seq, dd_means, color = V3)) +
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-ggsave(filename = "FigS4.png", plot = FigS4, device = "png", width = 6, height = 5, dpi = "retina")
+ggsave(filename = "Output/FigS5.png", plot = FigS5, device = "png", width = 6, height = 5, dpi = "retina")
 
-#code to make heatmap for K in response to Disturbance and time post disturbance
-source("LifeHistoriesMatrixModels/Scripts/Kwireplot.R")
-FigS5 <- ggplot(data = KQT, aes(x = t , y = Q))+
-  geom_raster(aes(fill = K), interpolate = T)+
-  scale_fill_viridis_c(option = "magma") +
-  scale_color_grey()+
-  labs(shape = "") +
-  theme_bw()+
-  xlab("LifeHistoriesMatrixModels/Scripts/Timesteps Post Disturbance")+
-  ylab("LifeHistoriesMatrixModels/Scripts/Disturbance Magnitude")+
-  theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
-        axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))+
-  guides(fill=guide_legend(title="K"))+
-  theme(strip.text.x = element_text(size = 14), 
-        strip.background = element_rect(
-          color="black", fill="white", linetype="solid"))+
-  theme(legend.margin = margin(-1,0,0,0, unit="cm"))
-
-ggsave(filename = "FigS5.png", FigS5, height = 5, width = 6, device = "png", dpi = "retina")
-
-
-# code for temperature regime used in most runs where temp isn't adjusted
-source("LifeHistoriesMatrixModels/Scripts/SpA_PulseMagnitude.R")
-temp$dts <- as.Date(temp$dts, origin = "1970-01-01")
-
+#-------------------------------
+## Produce Figure S6
+#-------------------------------
 # code for Temperature-Mortality relationship  
-source("LifeHistoriesMatrixModels/Scripts/NegExpSurv.R")
+source("Scripts/NegExpSurv.R")
+# plot mortality
 FigS6 <- ggplot(data = tempsurvdf, aes(x = tem, y = temSurv))+
   geom_line(size = 1)+
   xlab("Temperature C")+
@@ -409,4 +422,4 @@ FigS6 <- ggplot(data = tempsurvdf, aes(x = tem, y = temSurv))+
   theme(text = element_text(size = 14), axis.text.x = element_text(size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-ggsave(filename = "FigS6.png", plot= FigS6, width = 7, height = 5, device= "png", dpi = "retina")
+ggsave(filename = "Output/FigS6.png", plot= FigS6, width = 7, height = 5, device= "png", dpi = "retina")
