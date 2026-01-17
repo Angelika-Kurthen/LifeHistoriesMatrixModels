@@ -30,7 +30,7 @@ git clone https://github.com/Angelika-Kurthen/LifeHistoriesMatrixModels.git
 cd LifeHistoriesMatrixModels
 ```
 
-2. Install required R packages
+2. Install required R packages.
 A complete list is found at the top of each script.
 
 3. Run ```FigGen.R```, which sources all other scripts and data
