@@ -413,6 +413,22 @@ ggsave(filename = "Output/FigS5.png", plot = FigS5, device = "png", width = 6, h
 #-------------------------------
 # code for Temperature-Mortality relationship  
 source("Scripts/NegExpSurv.R")
+
+# make a sequence of temperatures
+tem <- seq(0, 34, by = 1)
+
+
+# run through for loop getting survivals
+temSurv <- vector()
+for(c in tem){
+  
+  b <- TempSurv(c)
+  
+  temSurv <- append(temSurv, b)
+}
+
+# make dataframe 
+tempsurvdf <- cbind(tem, temSurv)
 # plot mortality
 FigS6 <- ggplot(data = tempsurvdf, aes(x = tem, y = temSurv))+
   geom_line(size = 1)+
