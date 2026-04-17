@@ -1,5 +1,5 @@
 ##########################
-# Moderate Life History model
+# Fast Life History model
 ###########################
 
 library(purrr)
