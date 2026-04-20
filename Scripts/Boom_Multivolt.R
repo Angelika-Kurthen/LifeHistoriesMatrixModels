@@ -1,6 +1,7 @@
 ######################
 # Multivoltinism Boom Life History
 ######################
+library(pracma)
 
 # Source Boom life history strategy model and bespoke functions
 source("Scripts/Boom_1sp_Model.R")
@@ -51,3 +52,176 @@ colnames(mlist) <- c("Date", "Abund", "MeanTemp")
 B.oneyear <- mlist[which(mlist$Date >= "2035-01-01" & mlist$Date <= "2035-12-31"), ]
 B.oneyear$Date <- as.Date(B.oneyear$Date)
 B.oneyear$Strategy <- rep("Boom", times = length(B.oneyear$Date))
+
+# ### cycle through different temperature regimes and get peak number
+# # different temp regimes (-2 and +6)
+# seqs <- seq(-2, 8, by = 1)
+# 
+# # for adults, loop through temperature regimes, extract adult abundance in each timestep
+# for (i in 1:length(seqs)){
+#   temp$Temperature <- temp$Temperature + seqs[i]
+#   out <- Bmodel(discharge, temp, baselineK = 10000, disturbanceK = 40000, Qmin = 0.25, extinct = 50, iteration = 2, peaklist = 0, peakeach = length(temp$Temperature), stage_output = "3")
+#   m <- rowMeans(out)
+#   m <- cbind.data.frame(temp$dts, m[-1], rep(seqs[i], length(temp$dts)))
+#   assign(paste0("m",seqs[i]), m)
+#   temp$Temperature <- temp$Temperature - seqs[i]
+# }
+# 
+# # combine the different temperature regimes into one dataframe
+# seq_names <- paste0("m", seq(-2, 8, by = 1))
+# mseq_b <- do.call(rbind, mget(seq_names))# rename columns
+# colnames(mseq_b) <- c("Date", "Abund", "MeanTemp")
+# 
+# # subset one year 
+# mseq_b <- mseq_b[which(mseq_b$Date >= "2035-01-01" & mseq_b$Date <= "2035-12-31"), ]
+# mseq_b$Date <- as.Date(mseq_b$Date)
+# mseq_b$Strategy <- rep("Boom", times = length(mseq_b$Date))
+# 
+# # Peak Detection Function 
+# detect_peaks <- function(abund_vector, dates, min_height = NULL, min_distance = 2) {
+#   
+#   # findpeaks returns matrix: [peak value, peak index, begin, end]
+#   peaks_mat <- findpeaks(abund_vector, 
+#                          minpeakheight = min_height,
+#                          minpeakdistance = min_distance)
+#   
+#   if (is.null(peaks_mat)) return(data.frame(date = as.Date(character()), 
+#                                             abund = numeric(), 
+#                                             peak_idx = integer()))
+#   
+#   data.frame(
+#     date      = dates[peaks_mat[, 2]],
+#     abund     = peaks_mat[, 1],
+#     peak_idx  = peaks_mat[, 2]
+#   )
+# }
+# # Set peak detection thresholds
+# # min_distance = 6 timesteps prevents detecting the same cohort twice (each cohort takes a min of 3 weeks)
+# MIN_HEIGHT_LOG  <-  log(50)   
+# MIN_DISTANCE_TS <- 6       
+# 
+# peak_results_b <- mseq_b %>%
+#   mutate(log_abund = log(Abund)) %>%
+#   group_by(Strategy, MeanTemp) %>%
+#   group_modify(~{
+#     peaks <- detect_peaks(
+#       abund_vector  = .x$log_abund,
+#       dates         = .x$Date,
+#       min_height    = MIN_HEIGHT_LOG,
+#       min_distance  = MIN_DISTANCE_TS
+#     )
+#     peaks
+#   }) %>%
+#   ungroup()
+# 
+# peak_counts_b <- peak_results_b %>%
+#   dplyr::count(Strategy, MeanTemp, name = "n_peaks")
+
+# go over a series of temperatures 
+seqs <- seq(-10, 10, by = 1)
+
+for (i in 1:length(seqs)){
+  temp$Temperature <- temp$Temperature + seqs[i]
+  out <- Bmodel(discharge, temp, baselineK = 10000, disturbanceK = 40000, 
+                Qmin = 0.25, extinct = 50, iteration = 2, peaklist = 0, 
+                peakeach = length(temp$Temperature), stage_output = "3")
+  m <- rowMeans(out)
+  m <- cbind.data.frame(temp$dts, m[-1], rep(seqs[i], length(temp$dts)))
+  assign(paste0("m", seqs[i]), m)
+  temp$Temperature <- temp$Temperature - seqs[i]
+}
+
+seq_names <- paste0("m", seqs)
+mseq_b <- do.call(rbind, mget(seq_names))
+colnames(mseq_b) <- c("Date", "Abund", "MeanTemp")
+mseq_b$Date <- as.Date(mseq_b$Date)
+mseq_b$Strategy <- "Boom"
+
+# subset one year 
+mseq_b_1 <- mseq_b[which(mseq_b$Date >= "2035-01-01" & mseq_b$Date <= "2035-12-31"), ]
+
+
+# The simulation starts 2022-01-01, so burn-in ends ~2032
+mseq_b <- mseq_b %>%
+  filter(Date >= "2032-01-01") %>%
+  mutate(Year = year(Date),
+         log_abund = log(Abund))
+
+# Peak Detection Function
+detect_peaks <- function(abund_vector, dates, min_height = NULL, min_distance = 6) {
+  peaks_mat <- findpeaks(abund_vector,
+                         minpeakheight  = min_height,
+                         minpeakdistance = min_distance)
+  
+  if (is.null(peaks_mat)) return(data.frame(date      = as.Date(character()),
+                                            abund     = numeric(),
+                                            peak_idx  = integer()))
+  data.frame(
+    date     = dates[peaks_mat[, 2]],
+    abund    = peaks_mat[, 1],
+    peak_idx = peaks_mat[, 2]
+  )
+}
+
+MIN_HEIGHT_LOG  <- log(50)
+MIN_DISTANCE_TS <- 6
+
+# Detect peaks per Strategy x MeanTemp x Year
+peak_results_b <- mseq_b %>%
+  group_by(Strategy, MeanTemp, Year) %>%
+  group_modify(~{
+    detect_peaks(
+      abund_vector = .x$log_abund,
+      dates        = .x$Date,
+      min_height   = MIN_HEIGHT_LOG,
+      min_distance = MIN_DISTANCE_TS
+    )
+  }) %>%
+  ungroup()
+
+# Count peaks per Strategy x MeanTemp x Year
+peak_counts_by_year_b <- peak_results_b %>%
+  dplyr::count(Strategy, MeanTemp, Year, name = "n_peaks")
+
+# summarize to mean peaks per Strategy x MeanTemp
+peak_counts_b <- peak_counts_by_year_b %>%
+  group_by(Strategy, MeanTemp) %>%
+  dplyr::summarise(
+    mean_peaks = mean(n_peaks),
+    sd_peaks   = sd(n_peaks),
+    .groups    = "drop"
+  )%>%
+  complete(
+    Strategy,
+    MeanTemp = seqs
+  ) %>%
+  mutate(
+    mean_peaks = ifelse(is.na(mean_peaks), 0, mean_peaks),
+    sd_peaks   = ifelse(is.na(sd_peaks), 0, sd_peaks)
+  )
+
+
+peak_results_b_1 <- mseq_b_1 %>%
+  mutate(log_abund = log(Abund)) %>%
+  group_by(Strategy, MeanTemp) %>%
+  group_modify(~{
+    peaks <- detect_peaks(
+      abund_vector  = .x$log_abund,
+      dates         = .x$Date,
+      min_height    = MIN_HEIGHT_LOG,
+      min_distance  = MIN_DISTANCE_TS
+    )
+    peaks
+  }) %>%
+  ungroup()
+
+peak_counts_b_1 <- peak_results_b_1 %>%
+  dplyr::count(Strategy, MeanTemp, name = "n_peaks")%>%
+  complete(
+    Strategy,
+    MeanTemp = seqs
+  ) %>%
+  mutate(
+    mean_peaks = ifelse(is.na(n_peaks), 0, n_peaks)
+  )
+
