@@ -2,10 +2,12 @@
 ##Code to produce figures for Manuscript 1
 ###########################################
 
+library(tidyverse)
 library(ggpubr)
 library(patchwork)
 library(svglite)
 library(renv)
+library(pracma) 
 
 renv::init()
 renv::snapshot()
@@ -82,48 +84,28 @@ source("Scripts/Fast_Multivolt.R")
 source("Scripts/Moderate_Mulitvolt.R")
 source("Scripts/Slow_Multivolt.R")
 
-# get output from each script, combine into one large dataframe
-oneyear <- rbind(B.oneyear, C.oneyear, A.oneyear, D.oneyear)
+# combine into one large dataframe
+n_peaks <- rbind(peak_counts_b, peak_counts_c, peak_counts_a, peak_counts_d)
 
-# Define arrow positions based on where local maxima are
-arrow_data <- data.frame(
-  Strategy = c("Boom", "Boom", "Boom", "Boom", "Boom", "Boom", "Boom", "Boom",
-               "Fast", "Fast", "Fast", "Fast", "Fast", "Fast",
-               "Moderate","Moderate","Moderate", "Slow","Slow", "Slow"),  
-  MeanTemp = c(1,1,1, 2, 2,2,2,2,
-               1,1,2,2,2,2, 
-               1,2,2,1,2,2),
-  x_start = as.Date(c("2035-07-17", "2035-08-28", "2035-10-23", "2035-02-27", "2035-05-22", "2035-07-31", "2035-09-25", "2035-12-28",
-                      "2035-08-14", "2035-06-19", "2035-01-16", "2035-05-08", "2035-07-17", "2035-09-11",
-                      "2035-09-11", "2035-04-24", "2035-10-09", "2035-08-28", "2035-05-08","2035-10-09")),  
-  y_end = c(9.5, 9.5, 9.5, 9.8, 9.8, 9.8, 9.8, 9.8,
-            8.75, 8.75, 10.05, 10.5, 10.5, 10.5, 
-            7, 7, 7, 7, 7, 7),  # Adjust y positions
-  x_end =as.Date(c("2035-07-17", "2035-08-28", "2035-10-23", "2035-02-27", "2035-05-22", "2035-07-31", "2035-09-25", "2035-12-28",
-                   "2035-08-14", "2035-06-19", "2035-01-16", "2035-05-08", "2035-07-17", "2035-09-11",
-                   "2035-09-11", "2035-04-24", "2035-10-09", "2035-08-28", "2035-05-08","2035-10-09")),  
-  y_start = c(11.5, 11.5, 11.5, 11.8, 11.8, 11.8, 11.8, 11.8,
-              10.75, 10.75, 12.05, 12.05,12.05, 12.05, 
-              9, 9, 9, 9, 9, 9)  # Adjust arrow end points
-)
-
-
-
-# plot
-Fig2 <- ggplot(data = oneyear, aes(x = Date, y = log(Abund), group = as.factor(MeanTemp), color = as.factor(MeanTemp)))+
-  geom_line(size = 1, alpha = 0.8)+
-  scale_color_manual(name = "Mean Temperature (C)", labels = c("12", "20"), values = c("#4477AA", "#EE6677"))+
-  ylab("Log Adult Abundance") + 
+Fig2 <- ggplot(n_peaks, aes(x = MeanTemp + 14 , y = mean_peaks, color = Strategy)) +
+  geom_line(linewidth = 1, alpha = 0.8)+
+  scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
+  geom_point()+
   theme_bw()+
-  scale_x_date(date_labels="%B", date_breaks  ="2 month")+
-  theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, angle=45, size = 12.5), 
-        axis.text.y = element_text(size = 13),legend.position = "bottom", legend.key = element_rect(fill = "transparent"))+
   facet_wrap(~Strategy) +
-  geom_segment(data = arrow_data, aes(x = x_start, y = y_start, xend = x_end, yend = y_end, color = as.factor(MeanTemp)),
-               arrow = arrow(type = "closed", length = unit(0.1, "inches")),
-               inherit.aes = FALSE, show.legend = F)
-ggsave(filename = "Output/Fig2.png", Fig2, height = 5, width = 5, device = "png", dpi = "retina")
-
+  ylab("Mean Number of Cohort Peaks per Year") +
+  xlab("Mean Temperature (C)") +
+  theme_bw() +
+  theme(text = element_text(size = 14), 
+        axis.text.x = element_text(hjust = 1, angle = 45, size = 12.5),
+        axis.text.y = element_text(size = 13),
+        legend.position = "bottom") +
+  scale_x_continuous(breaks = seq(
+    floor(min(n_peaks$MeanTemp + 14)),
+    ceiling(max(n_peaks$MeanTemp + 14)),
+    by = 2
+  )) 
+ggsave(filename = "Output/Fig2.png", Fig2, height = 5, width = 7, device = "png", dpi = "retina")
 
 #----------------------------------
 # Produce Figure 3
@@ -242,12 +224,12 @@ es <- ggplot(data = temp_size, aes(x = temp_regime, y = size_means/1000, color =
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"), plot.margin = margin(5,5,5,20))
 
-Fig4 <- ggarrange(d, es, nrow  = 2, labels = c("a","b"))
+Fig4 <- ggarrange(d, es, nrow  = 2, labels = c("a","b"), common.legend = T)
 
 ggsave(filename = "Output/Fig4.png", plot = Fig4, device = "png", width = 7.5, height = 8.5, dpi = "retina")
 
 #--------------------------------
-## Produce Figure S1
+## Produce Figure A2
 #--------------------------------
 source("Scripts/ChaosTest.R")
 
@@ -305,20 +287,20 @@ stablen <- ggplot(data = stabledf, aes(x = log(V1), y = log(V2)))+
   theme_bw()
 
 # combine plots
-FigS1 <- ggarrange(chaostestplot,
+FigS2 <- ggarrange(chaostestplot,
           ggarrange(chaosn, chaosts, stablen, stablets, ncol = 2, nrow = 2, vjust = 0.5, labels = c("b", "c", "d", "e")),
           labels = "a",
           nrow = 2, common.legend = T)
 
-ggsave(filename = "Output/FigS1.png", FigS1, height = 8.5, width = 6.5, device = "png", dpi = "retina")
+ggsave(filename = "Output/FigS2.png", FigS2, height = 8.5, width = 6.5, device = "png", dpi = "retina")
 
 #-------------------------------
-## Produce Figure S2 
+## Produce Figure S3
 #-------------------------------
 # heatmap for K in response to Disturbance and time post disturbance
 source("Scripts/Kwireplot.R")
 # plot
-FigS2 <- ggplot(data = KQT, aes(x = t , y = Q))+
+FigS3 <- ggplot(data = KQT, aes(x = t , y = Q))+
   geom_raster(aes(fill = K), interpolate = T)+
   scale_fill_viridis_c(option = "magma") +
   scale_color_grey()+
@@ -334,10 +316,92 @@ FigS2 <- ggplot(data = KQT, aes(x = t , y = Q))+
           color="black", fill="white", linetype="solid"))+
   theme(legend.margin = margin(-1,0,0,0, unit="cm"))
 
-ggsave(filename = "Output/FigS2.png", FigS2, height = 5, width = 6, device = "png", dpi = "retina")
+ggsave(filename = "Output/FigS3.png", FigS3, height = 5, width = 6, device = "png", dpi = "retina")
+
+#-------------------------------
+## Produce Figure S4
+#-------------------------------
+
+source("Scripts/Boom_Multivolt.R")
+source("Scripts/Fast_Multivolt.R")
+source("Scripts/Moderate_Mulitvolt.R")
+source("Scripts/Slow_Multivolt.R")
+
+# combine into one large dataframe
+oneyear <- rbind(B.oneyear, C.oneyear, A.oneyear, D.oneyear)
+
+# Peak Detection Function 
+detect_peaks <- function(abund_vector, dates, min_height = NULL, min_distance = 2) {
+  
+  # findpeaks returns matrix: [peak value, peak index, begin, end]
+  peaks_mat <- findpeaks(abund_vector, 
+                         minpeakheight = min_height,
+                         minpeakdistance = min_distance)
+  
+  if (is.null(peaks_mat)) return(data.frame(date = as.Date(character()), 
+                                            abund = numeric(), 
+                                            peak_idx = integer()))
+  
+  data.frame(
+    date      = dates[peaks_mat[, 2]],
+    abund     = peaks_mat[, 1],
+    peak_idx  = peaks_mat[, 2]
+  )
+}
+# Set peak detection thresholds
+# min_distance = 6 timesteps prevents detecting the same cohort twice (each cohort takes a min of 3 weeks)
+MIN_HEIGHT_LOG  <-  log(50)   
+MIN_DISTANCE_TS <- 6       
+
+peak_results <- oneyear %>%
+  mutate(log_abund = log(Abund)) %>%
+  group_by(Strategy, MeanTemp) %>%
+  group_modify(~{
+    peaks <- detect_peaks(
+      abund_vector  = .x$log_abund,
+      dates         = .x$Date,
+      min_height    = MIN_HEIGHT_LOG,
+      min_distance  = MIN_DISTANCE_TS
+    )
+    peaks
+  }) %>%
+  ungroup()
+
+peak_counts <- peak_results %>%
+  dplyr::count(Strategy, MeanTemp, name = "n_peaks") %>%
+  mutate(TempLabel = ifelse(MeanTemp == 1, "Cool (12°C)", "Warm (20°C)"))
+
+FigS4 <- ggplot(data = oneyear, 
+                aes(x = Date, y = log(Abund), 
+                    group = as.factor(MeanTemp), 
+                    color = as.factor(MeanTemp))) +
+  geom_line(size = 1, alpha = 0.8) +
+  # Add arrows at detected peaks
+  geom_segment(data = peak_results,
+               aes(x = date, xend = date,
+                   y    = abund + 5,  
+                   yend = abund + 0.3,     
+                   color = as.factor(MeanTemp)),
+               arrow = arrow(type = "closed", length = unit(0.1, "inches")),
+               inherit.aes = FALSE,
+               show.legend = FALSE) +
+  scale_color_manual(name = "Mean Temperature (C)", 
+                     labels = c("12", "20"), 
+                     values = c("#4477AA", "#EE6677")) +
+  ylab("Log Adult Abundance") +
+  theme_bw() +
+  scale_x_date(date_labels = "%B", date_breaks = "2 month") +
+  theme(text = element_text(size = 14), 
+        axis.text.x = element_text(hjust = 1, angle = 45, size = 12.5),
+        axis.text.y = element_text(size = 13),
+        legend.position = "bottom") +
+  facet_wrap(~Strategy)
+
+# save
+ggsave(filename = "Output/FigS4.png", FigS4, height = 5, width = 5, device = "png", dpi = "retina")
 
 #--------------------------------
-## Produce Figure S4
+## Produce Figure S5
 #--------------------------------
 source("Scripts/Boom_sp_Fecundity_Toggle.R")
 source("Scripts/Fast_sp_FecundityToggle.R")
@@ -349,7 +413,7 @@ fec_df <- rbind(a_fec_df, b_fec_df, c_fec_df, d_fec_df)
 # refactor to match names
 fec_df$V3 <- factor(fec_df$V3, levels = c("B", "C", "A", "D"))
 # plot
-FigS4 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means, color = V3))+
+FigS5 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means, color = V3))+
   geom_point(size = 1, alpha = 0.5)+
   stat_smooth(method = "lm",
               position = "identity", 
@@ -369,11 +433,11 @@ FigS4 <- ggplot(data = fec_df, aes(fec_seq, y= fec_means, color = V3))+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-ggsave(filename = "Output/FigS4.png", plot = FigS4, device = "png", width = 6, height = 5, dpi = "retina")
+ggsave(filename = "Output/FigS5.png", plot = FigS5, device = "png", width = 6, height = 5, dpi = "retina")
 
 
 #--------------------------------
-## Produce Figure S5
+## Produce Figure S6
 #--------------------------------
 
 source("Scripts/Boom_sp_DD_toggle.R")
@@ -406,10 +470,10 @@ FigS5 <- ggplot(data = dd_df, aes(dd_seq, dd_means, color = V3)) +
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-ggsave(filename = "Output/FigS5.png", plot = FigS5, device = "png", width = 6, height = 5, dpi = "retina")
+ggsave(filename = "Output/FigS6.png", plot = FigS6, device = "png", width = 6, height = 5, dpi = "retina")
 
 #-------------------------------
-## Produce Figure S6
+## Produce Figure S7
 #-------------------------------
 # code for Temperature-Mortality relationship  
 source("Scripts/NegExpSurv.R")
@@ -438,4 +502,25 @@ FigS6 <- ggplot(data = tempsurvdf, aes(x = tem, y = temSurv))+
   theme(text = element_text(size = 14), axis.text.x = element_text(size = 12.5), 
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
-ggsave(filename = "Output/FigS6.png", plot= FigS6, width = 7, height = 5, device= "png", dpi = "retina")
+ggsave(filename = "Output/FigS7.png", plot= FigS7, width = 7, height = 5, device= "png", dpi = "retina")
+
+# 
+# # combine into one large dataframe
+# n_peaks_one <- rbind(peak_counts_b_1, peak_counts_c_1, peak_counts_a_1, peak_counts_d_1)
+# n_peaks_one[is.na(n_peaks_one)] <- 0
+# ggplot(n_peaks_one, aes(x = MeanTemp + 14 , y = n_peaks, color = Strategy)) +
+#   geom_line(linewidth = 1, alpha = 0.8)+
+#   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
+#   geom_point()+
+#   theme_bw()+
+#   facet_wrap(~Strategy) +
+#   ylab("Annual Cohort Peaks per Year") +
+#   xlab("Mean Temperature (C)") +
+#   theme_bw() +
+#   ylim(0, 8)+
+#   theme(text = element_text(size = 14))+  
+#   scale_x_continuous(breaks = seq(
+#     floor(min(n_peaks$MeanTemp + 14)),
+#     ceiling(max(n_peaks$MeanTemp + 14)),
+#     by = 2
+#   ))
