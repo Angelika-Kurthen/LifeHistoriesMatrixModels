@@ -503,24 +503,3 @@ FigS6 <- ggplot(data = tempsurvdf, aes(x = tem, y = temSurv))+
         axis.text.y = element_text(size = 13), legend.key = element_rect(fill = "transparent"))
 
 ggsave(filename = "Output/FigS7.png", plot= FigS7, width = 7, height = 5, device= "png", dpi = "retina")
-
-# 
-# # combine into one large dataframe
-# n_peaks_one <- rbind(peak_counts_b_1, peak_counts_c_1, peak_counts_a_1, peak_counts_d_1)
-# n_peaks_one[is.na(n_peaks_one)] <- 0
-# ggplot(n_peaks_one, aes(x = MeanTemp + 14 , y = n_peaks, color = Strategy)) +
-#   geom_line(linewidth = 1, alpha = 0.8)+
-#   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
-#   geom_point()+
-#   theme_bw()+
-#   facet_wrap(~Strategy) +
-#   ylab("Annual Cohort Peaks per Year") +
-#   xlab("Mean Temperature (C)") +
-#   theme_bw() +
-#   ylim(0, 8)+
-#   theme(text = element_text(size = 14))+  
-#   scale_x_continuous(breaks = seq(
-#     floor(min(n_peaks$MeanTemp + 14)),
-#     ceiling(max(n_peaks$MeanTemp + 14)),
-#     by = 2
-#   ))
