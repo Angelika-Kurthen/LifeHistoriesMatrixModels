@@ -94,7 +94,7 @@ Fig2 <- ggplot(n_peaks, aes(x = MeanTemp + 14 , y = mean_peaks, color = Strategy
   theme_bw()+
   facet_wrap(~Strategy) +
   ylab("Mean Number of Cohort Peaks per Year") +
-  xlab("Mean Temperature (C)") +
+  xlab("Mean Temperature (°C)") +
   theme_bw() +
   theme(text = element_text(size = 14), 
         axis.text.x = element_text(hjust = 1, angle = 45, size = 12.5),
@@ -165,7 +165,7 @@ totbiomass <- ggplot(data = size_df, aes(temp_regime, totbiomass/1000, color = V
   theme_bw()+
   geom_vline(xintercept = mean(a_temp_adjust_df$temp_regime), linetype="dotted", 
              size=1)+
-  xlab("Mean Annual Water Temperature in C")+
+  xlab("Mean Annual Water Temperature in °C")+
   ylab("Standing Biomass (g)")+
   scale_y_continuous(labels = scales::number_format(accuracy = 0.1), n.breaks = 3)+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
@@ -197,7 +197,7 @@ d <- ggplot(data = temp_dist, aes(x = temp_regime, y = V3, color = taxa))+
   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
   geom_point()+
   theme_bw()+
-  xlab("Mean Annual Water Temperature in C")+
+  xlab("Mean Annual Water Temperature in °C")+
   ylab("Log Abundance")+
   scale_y_continuous(labels = scales::number_format(accuracy = 1))+
   facet_grid(.~season, scales = "free_y", labeller = labeller(season = supp.labs))+
@@ -218,7 +218,7 @@ es <- ggplot(data = temp_size, aes(x = temp_regime, y = size_means/1000, color =
   scale_color_manual(name = "Strategy", labels=c("Boom", "Fast", "Moderate", "Slow"), values=c("#228833", "#CCBB44","#66CCEE", "#AA3377"))+
   geom_point()+
   theme_bw()+
-  xlab("Mean Annual Water Temperature in C")+
+  xlab("Mean Annual Water Temperature in °C")+
   ylab("Standing Biomass (g)")+
   facet_grid(.~season, scales = "free_y", labeller = labeller(season = supp.labs))+
   theme(text = element_text(size = 14), axis.text.x = element_text(hjust = 1, size = 12.5), 
@@ -385,7 +385,7 @@ FigS4 <- ggplot(data = oneyear,
                arrow = arrow(type = "closed", length = unit(0.1, "inches")),
                inherit.aes = FALSE,
                show.legend = FALSE) +
-  scale_color_manual(name = "Mean Temperature (C)", 
+  scale_color_manual(name = "Mean Temperature (°C)", 
                      labels = c("12", "20"), 
                      values = c("#4477AA", "#EE6677")) +
   ylab("Log Adult Abundance") +
@@ -494,9 +494,9 @@ for(c in tem){
 # make dataframe 
 tempsurvdf <- cbind(tem, temSurv)
 # plot mortality
-FigS6 <- ggplot(data = tempsurvdf, aes(x = tem, y = temSurv))+
+FigS7 <- ggplot(data = tempsurvdf, aes(x = tem, y = temSurv))+
   geom_line(size = 1)+
-  xlab("Temperature C")+
+  xlab("Temperature (°C)")+
   ylab("Survival")+
   theme_bw()+
   theme(text = element_text(size = 14), axis.text.x = element_text(size = 12.5), 
